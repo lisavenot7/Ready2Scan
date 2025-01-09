@@ -1,0 +1,160 @@
+1. Requêtes d'ajout des données d'un profil + compte associé
+INSERT INTO T_COMPTE_COM VALUES ('gestionnaire1@nom_etablissement.fr',MD5('gEnsNACS_24'));
+INSERT INTO T_PROFIL_PRO VALUES('gestionnaire1@nom_etablissement.fr','marc','valerie','A','G',CURDATE());
+
+2. Requête de vérification des données de connexion (pseudo et mot de passe), c’est à dire
+requête qui vérifie l’existence (ou non) du couple pseudo / mot de passe (profil activé)
+SELECT com_pseudo,com_motdepasse from T_COMPTE_COM WHERE com_pseudo='gestionnaire1@nom_etablissement.fr' 
+and com_motdepasse='gEnsNACS_24';
+
+3. Requête de récupération de toutes les données d un utilisateur (pseudo connu)
+SELECT * FROM T_PROFIL_PRO WHERE com_pseudo='gestionnaire1@nom_etablissement.fr';
+
+4. Requête permettant de connaître le statut d’un utilisateur dont on connaît le nom et le
+prénom
+SELECT pro_statut from T_PROFIL_PRO WHERE pro_nom='marc' and pro_prenom='valerie';
+
+5. Requête de modification de plusieurs données d un profil (pseudo connu)
+UPDATE T_PROFIL_PRO SET pro_nom='rigolts', pro_prenom='matteo' where com_pseudo='coucoutoi221@gmail.com';
+
+6. Requête de mise à jour du mot de passe d un compte (pseudo connu)
+UPDATE T_COMPTE_COM SET com_motdepasse=MD5('gEnsNACS_24') where com_pseudo='gestionnaire1@nom_etablissement.fr';
+
+7. Requête listant toutes les données des profils + comptes associés
+SELECT * FROM T_PROFIL_PRO;
+
+8. Requête de désactivation (/activation) d un profil (pseudo connu)
+UPDATE T_PROFIL_PRO SET pro_validite='A' where com_pseudo='gestionnaire1@nom_etablissement.fr';
+
+9. Requête supprimant un profil et le compte associé (pseudo connu)
+Delete from T_PROFIL_PRO where com_pseudo='gestionnaire1@nom_etablissement.fr';
+Delete from T_PROFIL_PRO where com_pseudo='gestionnaire1@nom_etablissement.fr';
+
+10. Requête d ajout d une actualité à la date d’insertion (sans texte car tout est dans le titre !)
+INSERT INTO T_ACTUALITE_ACT(act_titre,act_texte,act_date,act_etat,com_pseudo) VALUES('Ajout de tableaux','',
+NOW(),'E','venot.lisa.lv@gmail.com');
+
+11. Requête donnant la toute première actualité ajoutée
+SELECT * FROM T_ACTUALITE_ACT where act_id IN ( SELECT MIN(act_id) FROM T_ACTUALITE_ACT);
+
+12. Requête listant toutes les actualités et leur auteur (Membre)
+SELECT act_titre, com_pseudo from T_ACTUALITE_ACT;
+
+13. Requête listant toutes les 10 dernières actualités et leur auteur (Membre)
+select act_titre, act_texte,com_pseudo from T_ACTUALITE_ACT ORDER BY act_id ODESC LIMIT 10;
+
+14. Requête de modification d une actualité
+UPDATE T_ACTUALITE_ACT SET act_titre='Nouveau titre' where act_id=2;
+
+15. Requête mettant en ligne (/ cachant) une actualité
+UPDATE T_ACTUALITE_ACT SET act_etat='E' where act_id=2;
+
+16. Requête de suppression d une actualité à partir de son ID (n°)
+Delete from T_ACTUALITE_ACT WHERE act_id=2;
+
+17. Requête de désactivation de toutes les actualités publiées avant une certaine date
+(archivage des actualités trop anciennes)
+UPDATE T_ACTUALITE_ACT SET act_etat='C' where act_date>'20-11-2023';
+
+18. Requête qui récupère toutes les informations, sans oublier l’hyperlien, d’une 
+fiche particulière dont on connaît l’identifiant (ID)
+Select fic_id, fic_label, fic_contenue, fic_image, fic_code, fic_etat, suj_id, hyp_url from T_FICHE_FIC JOIN 
+T_ASSOCIATION_ASS USING(fic_id) JOIN T_HYPERLIEN_HYP USING(hyp_id) where fic_id=1;
+
+19. Requête qui récupère toutes les informations d’une fiche particulière (code connu)
+Sujets / fiches (+ hyperliens) :
+Select fic_id, fic_label, fic_contenue, fic_image, fic_code, fic_etat, suj_nom, hyp_url from T_FICHE_FIC JOIN 
+T_ASSOCIATION_ASS USING(fic_id) JOIN T_HYPERLIEN_HYP USING(hyp_id) JOIN T_SUJET_SUJ USING(suj_id) where 
+fic_code='Tab_Br-43452';
+
+20. Requête d ajout d un sujet
+INSERT INTO T_SUJET_SUJ(suj_nom,com_pseudo) VALUES('Ville de Lorient','venot.lisa.lv@gmail.com');
+
+21. Requête listant toutes les données des sujets, leur(s) fiche(s) (+hyperlien(s)), s’il y en a
+Select suj_id, suj_nom, com_pseudo, fic_id, fic_label, fic_contenue, fic_image, fic_code, fic_etat, hyp_url 
+from T_SUJET_SUJ  LEFT JOIN T_FICHE_FIC USING(suj_id) LEFT JOIN T_ASSOCIATION_ASS USING (fic_id) LEFT JOIN 
+T_HYPERLIEN_HYP USING(hyp_id);
+
+22. Requête de modification d un sujet
+UPDATE T_SUJET_SUJ SET suj_nom='Nouveau nom',suj_date=CURDATE() where suj_id=2;
+
+23. Requête(s) de suppression d un sujet à partir de son identifiant (ID)
+DELETE FROM T_ASSOCIATION_ASS WHERE fic_id in (select fic_id FROM T_FICHE_FIC WHERE suj_id=2);
+DELETE FROM T_FICHE_FIC WHERE suj_id=2;
+DELETE FROM T_SUJET_SUJ WHERE suj_id=2;
+
+24.Requête listant tous les sujets qui n’ont pas de fiche associée
+SELECT suj_id FROM T_SUJET_SUJ WHERE suj_id NOT IN(SELECT suj_id FROM T_FICHE_FIC);
+
+25.Requêtes listant toutes les fiches d’un sujet particulier
+SELECT fic_id, fic_label FROM T_FICHE_FIC JOIN T_SUJET_SUJ USING(suj_id) WHERE suj_nom='Port de Brest';
+
+26.Requête donnant le nombre total de fiches associées à un sujet (ID connu)
+select count(*) as Nb_Fiche from T_FICHE_FIC where suj_id=2;
+
+27.Requête d ajout d une fiche pour un sujet particulier
+INSERT INTO T_FICHE_FIC(fic_label,fic_contenue,fic_image,fic_code,fic_etat,suj_id) VALUES ('Peinture de la 
+plage de Concarneau faites par Annick Berteaux ','Peinture de la plage de Concarneau faites par Annick Bertaux 
+en 2017. C est une aquarelle sur papier mesurant 21 par 31cm','concarneau4.jpg','Tab_Co-74185','E','2');
+
+28.Requête(s) de suppression d une fiche connaissant son code (SANS supprimer les
+hyperliens associés à d’autres fiches
+DELETE FROM T_ASSOCIATION_ASS WHERE fic_id in (select fic_id FROM T_FICHE_FIC WHERE fic_code='Tab_Br-21489');
+DELETE FROM T_FICHE_FIC WHERE fic_code='Tab_Br-21489';
+
+29.Requête de modification d une fiche connaissant son code
+UPDATE T_FICHE_FIC SET fic_label='Peinture du port de brest faite par NOEL Jules' WHERE fic_code='Tab_Br-21489';
+
+30.Requête(s) de suppression de toutes les fiches associées à un sujet particulier
+DELETE FROM T_ASSOCIATION_ASS WHERE fic_id in (select fic_id FROM T_FICHE_FIC WHERE suj_id=3);
+DELETE FROM T_FICHE_FIC WHERE suj_id=3;
+
+31.Requête(s) de suppression de tous sujets n’ayant pas de fiche associée
+DELETE FROM T_SUJET_SUJ WHERE suj_id NOT IN(select suj_id FROM T_PROFIL_PRO);
+
+32.Requête de désactivation d’une fiche particulière
+UPDATE T_FICHE_FIC SET fic_etat='C' WHERE fic_id=2;
+
+
+33.Requête désactivant toutes les fiches associées aux sujets mis en ligne par un utilisateur
+particulier dont on connaît le pseudo
+UPDATE T_FICHE_FIC SET fic_etat='C' WHERE fic_id IN
+(SELECT fic_id from T_FICHE_FIC JOIN T_SUJET_SUJ USING(suj_id) 
+JOIN T_COMPTE_COM USING(com_pseudo) WHERE com_pseudo='venot.lisa.lv@gmail.com');
+
+34.Requête(s) associant un hyperlien / dissociant un hyperlien d’une fiche (ID connus)
+INSERT INTO T_ASSOCIATION_ASS VALUES('8','12');
+DELETE FROM T_ASSOCIATION_ASS WHERE fic_id=12;
+
+35.Requête listant toutes les URL des hyperliens de la base
+SELECT hyp_url FROM T_HYPERLIEN_HYP;
+
+36.Requête listant les URL des hyperliens associés à une ou des fiche(s), sans redondance
+SELECT DISTINCT(hyp_url) FROM T_HYPERLIEN_HYP WHERE hyp_id in(select hyp_id FROM T_ASSOCIATION_ASS);
+
+37.Requête listant toutes les fiches et leurs hyperliens correspondants, s’il y en a
+select fic_label,hyp_nom FROM T_FICHE_FIC LEFT JOIN T_ASSOCIATION_ASS USING(fic_id) LEFT JOIN T_HYPERLIEN_HYP 
+USING(hyp_id);
+
+38.Requête listant les URL associées à une fiche dont on connaît l’identifiant (ID
+SELECT hyp_url From T_HYPERLIEN_HYP JOIN T_ASSOCIATION_ASS USING(hyp_id) JOIN T_FICHE_FIC USING(fic_id) where 
+fic_id=2;
+
+39.Requête listant toutes les fiches qui n ont pas d’hyperlien
+select fic_id, fic_label From T_FICHE_FIC where fic_id Not in(select fic_id FROM T_HYPERLIEN_HYP);
+
+40.Requête qui vérifie l’existence (ou non) d’une URL parmi les URL qui existent déjà dans
+la base
+SELECT hyp_id from T_HYPERLIEN_HYP where hyp_url='https://fr.wikipedia.org/wiki/Fernand_Legout-G%C3%A9rard';
+
+41.Requête listant (/ supprimant) les hyperliens qui ne sont pas associés à une fiche
+SELECT hyp_id From T_HYPERLIEN_HYP where hyp_id NOT IN (select hyp_id FROM T_ASSOCIATION_ASS);
+DELETE FROM T_HYPERLIEN_HYP where hyp_id NOT IN (select hyp_id FROM T_ASSOCIATION_ASS);
+
+42.Requête(s) ajoutant un hyperlien pour une fiche choisie
+INSERT INTO T_HYPERLIEN_HYP(hyp_nom,hyp_url) VALUES('Annick Berteaux','hhttps://www.faunesauvage.fr/fsartiste/
+berteaux-annick');
+INSERT INTO T_ASSOCIATION_ASS VALUES((select hyp_id From T_HYPERLIEN_HYP where hyp_nom='Annick Berteaux'),'10');
+
+43.Requête(s) de suppression d’un hyperlien dont on connaît l’intitulé
+DELETE FROM T_HYPERLIEN_HYP WHERE hyp_nom='Fernand Legout-Gérard';
